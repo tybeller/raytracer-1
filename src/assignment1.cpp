@@ -4,8 +4,14 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+
+#include "surface.h"
+#include "camera.h"
 
 #include <iostream>
+
+using glm::vec3;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -157,18 +163,90 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+
+    /* TODO:
+
+    This is where we will be making the most changes
+    psuedo code from lecture:
+
+    Camera(ortho, perspective)
+        view-point, camera Basis
+        resolution
+        depth
+        l,r,t,b (left right top bottom)
+    RGB image[8][8]
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            Ray = Camera(i, j)
+            for obj in list of objs in the scene
+                int.ptr = obj.intersect(Ray)
+                color = shading(int.ptr)
+            image[i][j] = color
+
+    1. Create a camera
+    2. Create a list of objects in the scene
+    3. Create a 2D array of RGB values
+    4. For each pixel in the 2D array, create a ray from the camera
+    5. For each object in the list of objects, check if the ray intersects with the object
+    6. If the ray intersects with the object, calculate the color of the pixel using the shading function
+    7. Set the color of the pixel in the 2D array to the calculated color
+    8. Display the 2D array as an image
+
+    Possible road map:
+    Start with orthographic
+    create a camera
+    create a single object
+    create a 2D array of RGB values
+    create a ray from the camera for each pixel in the 2D array
+    check if the ray intersects with the object
+    if intersects, 1 color, if not black
+    display the 2D array as an image*/
+
+
+
     // Create the image (RGB Array) to be displayed
-    const int width  = 8; // keep it in powers of 2!
-    const int height = 8; // keep it in powers of 2!
+    const int width  = 800; // keep it in powers of 2!
+    const int height = 800; // keep it in powers of 2!
     unsigned char image[width*height*3];
+
+
+    //create cameras
+    OrthographicCamera orthoCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 10.0f));
+    PerspectiveCamera perspCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 10.0f), 10.0f);
+
+    //make a camera variable that picks one of the two
+    Camera* cam = &perspCam;
+
+    //create a material
+    Material material(vec3(255.0f, 0.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, 1.0f, false);
+    //create an object
+    Sphere sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
+
+    Surface* obj = &sphere;
+
     for(int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
+            Ray ray = cam->getRay(i, j);
+            float t = obj->intersects(ray);
             int idx = (i * width + j) * 3;
-            image[idx] = (unsigned char) (255 * i*j/height/width)  ; //((i+j) % 2) * 255;
-            image[idx+1] = 0;
-            image[idx+2] = 0;
+            if(t != -1.0f)
+            {
+                image[idx] = (unsigned char) (obj->getMaterial().ambientColor[0])  ; //((i+j) % 2) * 255;
+                image[idx+1] = (unsigned char) (obj->getMaterial().ambientColor[1])  ;
+                image[idx+2] = (unsigned char) (obj->getMaterial().ambientColor[2])  ;
+            }
+            else
+            {
+                image[idx] = (unsigned char) (0)  ; //((i+j) % 2) * 255;
+                image[idx+1] = (unsigned char) (0)  ;
+                image[idx+2] = (unsigned char) (0)  ;
+            }
+            //int idx = (i * width + j) * 3;
+            //image[idx] = (unsigned char) (100 * i*j/height/width)  ; //((i+j) % 2) * 255;
+            //image[idx+1] = (unsigned char) (33 * i*j/height/width)  ;
+            //image[idx+2] = (unsigned char) (90 * i*j/height/width)  ;
         }
     }
 
