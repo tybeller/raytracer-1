@@ -5,13 +5,16 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
+#include <vector>
 
 #include "surface.h"
 #include "camera.h"
+#include "light.h"
 
 #include <iostream>
 
 using glm::vec3;
+using std::vector;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -224,15 +227,40 @@ int main()
 
     //create a material
     Material material(vec3(0.0f, 255.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, 1.0f, false);
-    //create an object
-    Sphere sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
 
-    Surface* obj = &sphere;
+    //create an object
+    vector<Surface> objects;
+    Sphere sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
+    objects.push_back(sphere);
+
+
+    //create lights
+    vector<Light> lights;
+    AmbientLight ambientLight(vec3(255.0f, 255.0f, 255.0f), 0.5f);
 
     for(int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
+            Ray ray = cam->getRay(i, j);
+            float t = -1.0f;
+            Surface* closestObject = NULL;
+            for (int k = 0; k < objects.size(); k++)
+            {
+                float newDist = objects[k].getIntersection(ray);
+                if (newDist != -1.0f && (t == -1.0f || newDist < t))
+                {
+                    t = newDist;
+                    closestObject = &objects[k];
+                }
+            }
+            vec3 hitPoint = ray.at(t);
+
+            
+
+
+
+            /*
             Ray ray = cam->getRay(i, j);
             float t = obj->intersects(ray);
             int idx = (i * width + j) * 3;
@@ -255,6 +283,7 @@ int main()
             //image[idx] = (unsigned char) (100 * i*j/height/width)  ; //((i+j) % 2) * 255;
             //image[idx+1] = (unsigned char) (33 * i*j/height/width)  ;
             //image[idx+2] = (unsigned char) (90 * i*j/height/width)  ;
+            */
         }
     }
 
