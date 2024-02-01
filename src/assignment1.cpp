@@ -118,10 +118,10 @@ int main()
     // ------------------------------------------------------------------
     float vertices[] = {
         // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+         1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+         1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
     };
     unsigned int indices[] = {  
         0, 1, 3, // first triangle
@@ -164,8 +164,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 
-    /* TODO:
-
+    /* PLAN:
     This is where we will be making the most changes
     psuedo code from lecture:
 
@@ -203,6 +202,12 @@ int main()
     display the 2D array as an image*/
 
 
+    /* TODO:
+    - Create light source(s) and put in scene
+    - Allow for more than 1 object in the scene
+    - create shading functions
+    */
+
 
     // Create the image (RGB Array) to be displayed
     const int width  = 800; // keep it in powers of 2!
@@ -218,7 +223,7 @@ int main()
     Camera* cam = &perspCam;
 
     //create a material
-    Material material(vec3(255.0f, 0.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, 1.0f, false);
+    Material material(vec3(0.0f, 255.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, 1.0f, false);
     //create an object
     Sphere sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
 
@@ -233,15 +238,18 @@ int main()
             int idx = (i * width + j) * 3;
             if(t != -1.0f)
             {
+
+
+
                 image[idx] = (unsigned char) (obj->getMaterial().ambientColor[0])  ; //((i+j) % 2) * 255;
                 image[idx+1] = (unsigned char) (obj->getMaterial().ambientColor[1])  ;
                 image[idx+2] = (unsigned char) (obj->getMaterial().ambientColor[2])  ;
             }
             else
-            {
-                image[idx] = (unsigned char) (0)  ; //((i+j) % 2) * 255;
-                image[idx+1] = (unsigned char) (0)  ;
-                image[idx+2] = (unsigned char) (0)  ;
+            { 
+                image[idx] = (unsigned char) (((800 - (float) i) / 800) * 205)  ; //((i+j) % 2) * 255;
+                image[idx+1] = (unsigned char) (((800 - (float) i) / 800) * 60 + 60)  ;
+                image[idx+2] = (unsigned char) (120 + (((float) i) / 800) * 120)  ;
             }
             //int idx = (i * width + j) * 3;
             //image[idx] = (unsigned char) (100 * i*j/height/width)  ; //((i+j) % 2) * 255;
