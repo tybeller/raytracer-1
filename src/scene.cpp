@@ -93,6 +93,10 @@ vec3 Scene::trace(Ray visionRay) {
             color += surfaceMaterial.getReflectivity() * trace(reflectedRay);
         }
     }
+    else {
+        //sky color
+        color = vec3(255.0f, 77.0f, 0.0f) + visionRay.getDirection().z * vec3(0.0f, 100.0f, 10.0f);
+    }
 
     // take each component of vec3 color and clamp it to the range [0, 255]
     color[0] = std::max(0.0f, std::min(255.0f, color[0]));

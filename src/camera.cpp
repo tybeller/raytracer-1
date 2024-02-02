@@ -56,7 +56,7 @@ void PerspectiveCamera::generateRays(){
             float x = -halfWidth + pixelWidth * (i + 0.5);
             float y = halfHeight - pixelHeight * (j + 0.5);
             vec3 origin = viewPoint;
-            vec3 direction = normalize(x * u + y * v - projectionDistance * w);
+            vec3 direction = normalize(-projectionDistance*w + y*u + x*v);
             rays[i][j] = Ray(origin, direction);
         }
     }

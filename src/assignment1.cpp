@@ -222,7 +222,7 @@ int main()
 
     //create cameras
     //OrthographicCamera orthoCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f));
-    PerspectiveCamera perspCam(width, height, vec3(2.0f, -10.0f, 5.0f), vec3(0.0f, 2.0f, -1.0f), vec3(-1.0f, 0.0f, 0.0f), 10.0f);
+    PerspectiveCamera perspCam(width, height, vec3(2.0f, -10.0f, 5.0f), vec3(0.0f, 2.0f, -1.0f), vec3(0.0f, 0.0f, 1.0f), 10.0f);
 
     Camera *cam = &perspCam;
 
@@ -232,14 +232,15 @@ int main()
 
     //create a material
     Material material(vec3(255.0f, 19.0f, 1.0f), 0.1f, vec3(255.0f, 10.0f, 1.0f), 0.5f, vec3(255.0f, 10.0f, 1.0f), 5.5f, 100.0f, false, 0);
-    Material material2(vec3(20.0f, 255.0f, 255.0f), 0.1f, vec3(20.0f, 255.0f, 255.0f), 0.3f, vec3(20.0f, 255.0f, 255.0f), 10.0f, 100.0f, true, 0.5f);
-    Material triangleMaterial(vec3(55.0f, 55.0f, 55.0f), 0.1f, vec3(55.0f, 55.0f, 55.0f), 0.5f, vec3(55.0f, 55.0f, 55.0f), 10000.5f, 1000.0f, true, 1.0f);
-    Material planeMaterial(vec3(130.0f, 130.0f, 130.0f), 0.1f, vec3(130.0f, 130.0f, 130.0f), 0.5f, vec3(130.0f, 130.0f, 130.0f), 10000.5f, 1000.0f, true, 0.1f);
+    Material material2(vec3(20.0f, 255.0f, 255.0f), 0.1f, vec3(20.0f, 255.0f, 255.0f), 0.3f, vec3(20.0f, 255.0f, 255.0f), 10.0f, 100.0f, true, 0.3f);
+    Material triangleMaterial(vec3(100.0f, 100.0f, 100.0f), 0.01f, vec3(100.0f, 100.0f, 100.0f), 0.3f, vec3(100.0f, 100.0f, 100.0f), 10.5f, 100.0f, true, 0.6f);
+    Material planeMaterial(vec3(130.0f, 130.0f, 130.0f), 0.1f, vec3(130.0f, 130.0f, 130.0f), 0.5f, vec3(130.0f, 130.0f, 130.0f), 10.5f, 100.0f, true, 0.05f);
 
     //create an object an an array of objects in the scene not using vector
     //dynamically allocate the sphere and an array to hold it
     Sphere* sphere = new Sphere(1.0, vec3(-3.0f, 0.0f, 0.0f), material);
     Sphere* sphere2 = new Sphere(1.5, vec3(3.0f, -3.0f, 0.5f), material2);
+    Sphere* sphere3 = new Sphere(5, vec3(6.0f, 6.0f, 4.0f), triangleMaterial);
     Plane* plane = new Plane(vec3(0.0f, 0.0f, 1.0f), -1.0f, planeMaterial);
 
     Triangle* triangle = new Triangle(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), triangleMaterial);
@@ -255,6 +256,8 @@ int main()
     scene.addSurface(triangle3);
     scene.addSurface(triangle4);
     
+    scene.addSurface(sphere3);
+
     Light* directionalLight = new Light(vec3(255.0f, 255.0f, 255.0f), vec3(-50.0f, 50.0f,-50.0f), 0.02f);
     scene.addLight(directionalLight);
 
