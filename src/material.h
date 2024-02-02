@@ -21,6 +21,17 @@ public:
         specularColor(specularColor), specularStrength(specularStr), phongExp(phongExp), 
         glazed(glazed) {}
 
+    //Getters
+    vec3 getAmbient() { return ambientColor * ambientStrength; }
+
+    vec3 getDiffuse() { return diffuseColor * diffuseStrength; }
+
+    vec3 getSpecular() { return specularColor * specularStrength; }
+    
+    float getPhongExp() { return phongExp; }
+    bool isGlazed() { return glazed; }
+
+protected:
     vec3 ambientColor;
     float ambientStrength;
 

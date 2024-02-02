@@ -5,13 +5,17 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
+#include <vector>
 
 #include "surface.h"
 #include "camera.h"
+#include "light.h"
+#include "scene.h"
 
 #include <iostream>
 
 using glm::vec3;
+using std::vector;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -60,7 +64,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Display RGB Array", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "RAYTRACING BABY", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -212,49 +216,55 @@ int main()
     // Create the image (RGB Array) to be displayed
     const int width  = 800; // keep it in powers of 2!
     const int height = 800; // keep it in powers of 2!
+
+    std::cout << "Creating image of size " << width << "x" << height << std::endl;
     unsigned char image[width*height*3];
 
 
     //create cameras
-    OrthographicCamera orthoCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 10.0f));
-    PerspectiveCamera perspCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 10.0f), 10.0f);
+    //OrthographicCamera orthoCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f));
+    PerspectiveCamera perspCam(width, height, vec3(0.0f, -10.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), 10.0f);
 
-    //make a camera variable that picks one of the two
-    Camera* cam = &perspCam;
+    Camera *cam = &perspCam;
+
+
+    //create a scene
+    Scene scene = Scene();
 
     //create a material
-    Material material(vec3(0.0f, 255.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, 1.0f, false);
-    //create an object
-    Sphere sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
+    Material material(vec3(255.0f, 0.0f, 0.0f), 0.1f, vec3(255.0f, 0.0f, 0.0f), 0.5f, vec3(255.0f, 0.0f, 0.0f), 0.5f, 1.0f, false);
+    Material planeMaterial(vec3(130.0f, 130.0f, 130.0f), 0.1f, vec3(130.0f, 130.0f, 130.0f), 0.5f, vec3(130.0f, 130.0f, 130.0f), 0.5f, 1.0f, false);
 
-    Surface* obj = &sphere;
+    //create an object an an array of objects in the scene not using vector
+    //dynamically allocate the sphere and an array to hold it
+    Sphere* sphere = new Sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
+    Plane* plane = new Plane(vec3(0.0f, 0.0f, 1.0f), -1.0f, planeMaterial);
+
+    Triangle* triangle = new Triangle(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), material);
+
+    scene.addSurface(sphere);
+    scene.addSurface(plane);
+    scene.addSurface(triangle);
+
+    
+    Light* directionalLight = new Light(vec3(255.0f, 255.0f, 255.0f), vec3(-50.0f, 50.0f,-50.0f), 0.02f);
+    scene.addLight(directionalLight);
+
+    AmbientLight ambientLight = AmbientLight(vec3(255.0f, 255.0f, 255.0f), 0.007f);
+    scene.setAmbientLight(ambientLight);
 
     for(int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
             Ray ray = cam->getRay(i, j);
-            float t = obj->intersects(ray);
+            vec3 color = scene.trace(ray);
+
+
             int idx = (i * width + j) * 3;
-            if(t != -1.0f)
-            {
-
-
-
-                image[idx] = (unsigned char) (obj->getMaterial().ambientColor[0])  ; //((i+j) % 2) * 255;
-                image[idx+1] = (unsigned char) (obj->getMaterial().ambientColor[1])  ;
-                image[idx+2] = (unsigned char) (obj->getMaterial().ambientColor[2])  ;
-            }
-            else
-            { 
-                image[idx] = (unsigned char) (((800 - (float) i) / 800) * 205)  ; //((i+j) % 2) * 255;
-                image[idx+1] = (unsigned char) (((800 - (float) i) / 800) * 60 + 60)  ;
-                image[idx+2] = (unsigned char) (120 + (((float) i) / 800) * 120)  ;
-            }
-            //int idx = (i * width + j) * 3;
-            //image[idx] = (unsigned char) (100 * i*j/height/width)  ; //((i+j) % 2) * 255;
-            //image[idx+1] = (unsigned char) (33 * i*j/height/width)  ;
-            //image[idx+2] = (unsigned char) (90 * i*j/height/width)  ;
+            image[idx] = (unsigned char) color[0];
+            image[idx+1] = (unsigned char) color[1];
+            image[idx+2] = (unsigned char) color[2];
         }
     }
 

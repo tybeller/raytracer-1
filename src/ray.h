@@ -6,9 +6,9 @@ using glm::vec3;
 class Ray {
 public:
     Ray() {}
-    Ray(const vec3& origin, const vec3& direction) : orig(origin), dir(direction) {}
-    vec3 origin() const { return orig; }
-    vec3 direction() const { return dir; }
+    Ray(const vec3& origin, const vec3& direction) : orig(origin), dir(normalize(direction)) {}
+    vec3 getOrigin() const { return orig; }
+    vec3 getDirection() const { return dir; }
     vec3 at(double t) const { return orig + float(t) * dir; }
 
 private:
