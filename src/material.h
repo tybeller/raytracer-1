@@ -15,11 +15,11 @@ public:
             vec3 diffuseColor, float diffuseStr, 
             vec3 specularColor, float specularStr, 
             float phongExp, 
-            bool glazed = false) : 
+            bool glazed = false, float reflectivity = 0.0f) : 
         ambientColor(ambientColor), ambientStrength(ambientStr),
         diffuseColor(diffuseColor), diffuseStrength(diffuseStr),
         specularColor(specularColor), specularStrength(specularStr), phongExp(phongExp), 
-        glazed(glazed) {}
+        glazed(glazed), reflectivity(reflectivity) {}
 
     //Getters
     vec3 getAmbient() { return ambientColor * ambientStrength; }
@@ -30,6 +30,7 @@ public:
     
     float getPhongExp() { return phongExp; }
     bool isGlazed() { return glazed; }
+    float getReflectivity() { return reflectivity; }
 
 protected:
     vec3 ambientColor;
@@ -44,4 +45,5 @@ protected:
     float phongExp;
 
     bool glazed;
+    float reflectivity;
 };

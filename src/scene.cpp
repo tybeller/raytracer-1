@@ -48,7 +48,7 @@ vec3 Scene::trace(Ray visionRay) {
 
         color += ambientLight.getColor() * ambientLight.getIntensity() * surfaceMaterial.getAmbient();
 
-
+        
         vec3 impactPoint = visionRay.getOrigin() + t * visionRay.getDirection();
         vec3 normal = closestSurface->getNormal(impactPoint);
         // check that the normal is in the right direction
@@ -74,26 +74,24 @@ vec3 Scene::trace(Ray visionRay) {
                 }
             }
             if (!inShadow) {
+                //add diffuse light
                 float diffuse = glm::dot(normal, lightDirection);
                 if (diffuse > 0.0f) {
                     color += lightIntensity * lights[i]->getColor() * surfaceMaterial.getDiffuse() * diffuse;
                 }
-                /*//add specular light
-                vec3 reflection = glm::reflect(-lightDirection, normal);
-                float specular = glm::dot(reflection, visionRay.getDirection());
-                if (specular > 0.0f) {
-                    color += lightIntensity * lights[i]->getColor() * surfaceMaterial.getSpecular() * pow(specular, surfaceMaterial.getShininess());
-                }*/
+                //add specular light (blinn phong model)
+                vec3 viewDirection = glm::normalize(visionRay.getOrigin() - impactPoint);
+                vec3 halfVector = glm::normalize(lightDirection + viewDirection);
+                float specular = glm::pow(glm::max(0.0f, glm::dot(normal, halfVector)), surfaceMaterial.getPhongExp());
+                color += lightIntensity * lights[i]->getColor() * surfaceMaterial.getSpecular() * specular;
             }
-
-
-            
-
-    
-
         }
-
-
+        if(surfaceMaterial.isGlazed()) {
+            //recursive raytracing
+            vec3 reflectedDirection = glm::normalize(visionRay.getDirection() - 2.0f * glm::dot(visionRay.getDirection(), normal) * normal);
+            Ray reflectedRay = Ray(impactPoint + 0.001f * normal, reflectedDirection);
+            color += surfaceMaterial.getReflectivity() * trace(reflectedRay);
+        }
     }
 
     // take each component of vec3 color and clamp it to the range [0, 255]
