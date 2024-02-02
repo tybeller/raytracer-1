@@ -56,7 +56,7 @@ vec3 Sphere::getNormal(vec3 point) {
 }
 
 vec3 Triangle::getNormal(vec3 point) {
-    vec3 normal = glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
+    return glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
 }
 
 vec3 Plane::getNormal(vec3 point) {

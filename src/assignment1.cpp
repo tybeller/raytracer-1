@@ -10,6 +10,7 @@
 #include "surface.h"
 #include "camera.h"
 #include "light.h"
+#include "scene.h"
 
 #include <iostream>
 
@@ -222,40 +223,35 @@ int main()
     OrthographicCamera orthoCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 10.0f));
     PerspectiveCamera perspCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 10.0f), 10.0f);
 
-    //make a camera variable that picks one of the two
-    Camera* cam = &perspCam;
+    Camera *cam = &perspCam;
+
+
+    //create a scene
+    Scene scene = Scene();
 
     //create a material
     Material material(vec3(0.0f, 255.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, vec3(255.0f, 0.0f, 0.0f), 1.0f, 1.0f, false);
 
-    //create an object
-    vector<Surface> objects;
-    Sphere sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
-    objects.push_back(sphere);
+    //create an object an an array of objects in the scene not using vector
+    //dynamically allocate the sphere and an array to hold it
+    Sphere* sphere = new Sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
 
-
-    //create lights
-    vector<Light> lights;
-    AmbientLight ambientLight(vec3(255.0f, 255.0f, 255.0f), 0.5f);
+    scene.addSurface(sphere);
+    
+    //Sphere sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
 
     for(int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
             Ray ray = cam->getRay(i, j);
-            float t = -1.0f;
-            Surface* closestObject = NULL;
-            for (int k = 0; k < objects.size(); k++)
-            {
-                float newDist = objects[k].getIntersection(ray);
-                if (newDist != -1.0f && (t == -1.0f || newDist < t))
-                {
-                    t = newDist;
-                    closestObject = &objects[k];
-                }
-            }
-            vec3 hitPoint = ray.at(t);
+            vec3 color = scene.trace(ray);
 
+
+            int idx = (i * width + j) * 3;
+            image[idx] = (unsigned char) color[0];
+            image[idx+1] = (unsigned char) color[1];
+            image[idx+2] = (unsigned char) color[2];
             
 
 

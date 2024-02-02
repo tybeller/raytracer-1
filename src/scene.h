@@ -11,8 +11,6 @@ public:
     Scene();
     ~Scene();
     void addSurface(Surface* surface);
-    void setCamera(Camera* camera);
-    void getCamera();
     void addLight(Light* light);
     void setAmbientLight(AmbientLight ambientLight);
 
@@ -20,7 +18,6 @@ public:
     
 protected:
     vector<Surface*> surfaces;
-    Camera* camera;
     vector<Light*> lights;
     AmbientLight ambientLight;
 };
