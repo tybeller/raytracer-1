@@ -22,8 +22,8 @@ void OrthographicCamera::generateRays(){
     vec3 v = cross(w, u);
     
     float aspectRatio = (float)width / (float)height;
-    float halfWidth = aspectRatio;
-    float halfHeight = 1.0;
+    float halfWidth = aspectRatio * 10;
+    float halfHeight = 1.0 * 10;
     float pixelWidth = halfWidth * 2.0 / (float)width;
     float pixelHeight = halfHeight * 2.0 / (float)height;
     rays = new Ray*[width];
@@ -45,8 +45,8 @@ void PerspectiveCamera::generateRays(){
     vec3 v = cross(w, u);
     
     float aspectRatio = (float)width / (float)height;
-    float halfWidth = aspectRatio;
-    float halfHeight = 1.0;
+    float halfWidth = aspectRatio* 10;
+    float halfHeight = 1.0 * 10;
     float pixelWidth = halfWidth * 2.0 / (float)width;
     float pixelHeight = halfHeight * 2.0 / (float)height;
     rays = new Ray*[width];

@@ -43,11 +43,11 @@ private:
 
 class Plane : public Surface {
 public:
-    Plane(vec3 normal, float d, Material material) : normal(normal), d(d), Surface(material) {}
+    Plane(vec3 normal, float distanceAlongNormal, Material material) : normal(normal), distanceAlongNormal(distanceAlongNormal), Surface(material) {}
     using Surface::getIntersection;
     float getIntersection(Ray ray) override;
     vec3 getNormal(vec3 point) override;
 private:
     vec3 normal;
-    float d;
+    float distanceAlongNormal;
 };

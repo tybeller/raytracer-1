@@ -8,7 +8,7 @@ using std::vector;
 
 class Light {
 public:
-    Light(vec3 color, float intensity, vec3 direction) : color(color), intensity(intensity), direction(normalize(direction)) {};
+    Light(vec3 color, vec3 direction, float intensity) : color(color), intensity(intensity), direction(normalize(direction)) {};
     vec3 getColor();
     float getIntensity(vec3 pointPosition = vec3(0.0f));
     vec3 getDirection();
@@ -20,7 +20,7 @@ protected:
 
 class SpotLight : public Light {
 public:
-    SpotLight(vec3 color, float intensity, vec3 direction, vec3 position, float angle) : Light(color, intensity, direction), position(position), angle(angle) {};
+    SpotLight(vec3 color, vec3 direction, float intensity, vec3 position, float angle) : Light(color, direction, intensity), position(position), angle(angle) {};
     
     float getIntensity(vec3 pointPosition);
     vec3 getPosition();

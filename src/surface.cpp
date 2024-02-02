@@ -43,8 +43,8 @@ float Triangle::getIntersection(Ray ray) {
 float Plane::getIntersection(Ray ray) {
     float denominator = glm::dot(normal, ray.getDirection());
     if (denominator > 0.00001 || denominator < -0.00001) {
-        float t = (d - glm::dot(normal, ray.getOrigin())) / denominator;
-        if (t > 0.00001) {
+        float t = (distanceAlongNormal - glm::dot(normal, ray.getOrigin())) / denominator;
+        if (t > 0.0f) {
             return t;
         }
     }
