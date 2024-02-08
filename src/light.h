@@ -9,6 +9,7 @@ using std::vector;
 class Light {
 public:
     Light(vec3 color, vec3 direction, float intensity) : color(color), intensity(intensity), direction(normalize(direction)) {};
+    virtual ~Light() {};
     vec3 getColor();
     float getIntensity(vec3 pointPosition = vec3(0.0f));
     vec3 getDirection();
@@ -18,16 +19,23 @@ protected:
     vec3 direction;
 };
 
+class DirectionalLight : public Light {
+public:
+    DirectionalLight(vec3 color, vec3 direction, float intensity) : Light(color, direction, intensity) {};
+};
+
+
 class SpotLight : public Light {
 public:
-    SpotLight(vec3 color, vec3 direction, float intensity, vec3 position, float angle) : Light(color, direction, intensity), position(position), angle(angle) {};
+    SpotLight(vec3 color, vec3 direction, float intensity, vec3 position, float maxAngle) : Light(color, direction, intensity), position(position), maxAngle(maxAngle) {};
     
     float getIntensity(vec3 pointPosition);
+    vec3 getSpotLightDirection(vec3 pointPosition);
     vec3 getPosition();
-    float getAngle();
+    float getMaxAngle();
 private:
     vec3 position;
-    float angle;
+    float maxAngle;
 };
 
 class AmbientLight {

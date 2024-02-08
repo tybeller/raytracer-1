@@ -15,6 +15,13 @@ Ray Camera::getRay(int i, int j){
     return rays[i][j];
 }
 
+void Camera::changeView(vec3 viewPoint, vec3 lookAt, vec3 up){
+    this->viewPoint = viewPoint;
+    this->lookAt = normalize(lookAt);
+    this->up = normalize(up);
+    generateRays();
+}
+
 void OrthographicCamera::generateRays(){
     vec3 e = viewPoint;
     vec3 w = normalize(-lookAt);
@@ -32,7 +39,7 @@ void OrthographicCamera::generateRays(){
         for(int j = 0; j < height; j++){
             float x = -halfWidth + pixelWidth * (i + 0.5);
             float y = halfHeight - pixelHeight * (j + 0.5);
-            vec3 origin = viewPoint + x * u + y * v;
+            vec3 origin = viewPoint + y * u + x * v;
             rays[i][j] = Ray(origin, -w);
         }
     }

@@ -2,10 +2,12 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #define GLFW_INCLUDE_NONE
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <stb_image/stb_image_write.h>
 
 #include "surface.h"
 #include "camera.h"
@@ -217,12 +219,12 @@ int main()
     const int width  = 800; // keep it in powers of 2!
     const int height = 800; // keep it in powers of 2!
 
-    unsigned char image[width*height*3];
+    //unsigned char image[width*height*3];
 
 
     //create cameras
-    //OrthographicCamera orthoCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f));
-    PerspectiveCamera perspCam(width, height, vec3(2.0f, -10.0f, 5.0f), vec3(0.0f, 2.0f, -1.0f), vec3(0.0f, 0.0f, 1.0f), 10.0f);
+    OrthographicCamera orthoCam(width, height, vec3(2.0f, -10.0f, 10.0f), vec3(0.0f, 2.0f, -1.0f), vec3(0.0f, 0.0f, 1.0f));
+    PerspectiveCamera perspCam(width, height, vec3(2.0f, -10.0f, 10.0f), vec3(0.0f, 2.0f, -1.0f), vec3(0.0f, 0.0f, 1.0f), 10.0f);
 
     Camera *cam = &perspCam;
 
@@ -231,22 +233,24 @@ int main()
     Scene scene = Scene();
 
     //create a material
-    Material material(vec3(255.0f, 19.0f, 1.0f), 0.1f, vec3(255.0f, 10.0f, 1.0f), 0.5f, vec3(255.0f, 10.0f, 1.0f), 5.5f, 100.0f, false, 0);
+    Material material(vec3(255.0f, 19.0f, 1.0f), 0.1f, vec3(255.0f, 10.0f, 1.0f), 0.5f, vec3(255.0f, 10.0f, 1.0f), 1.5f, 10.0f, false);
     Material material2(vec3(20.0f, 255.0f, 255.0f), 0.1f, vec3(20.0f, 255.0f, 255.0f), 0.3f, vec3(20.0f, 255.0f, 255.0f), 10.0f, 100.0f, true, 0.3f);
-    Material triangleMaterial(vec3(100.0f, 100.0f, 100.0f), 0.01f, vec3(100.0f, 100.0f, 100.0f), 0.3f, vec3(100.0f, 100.0f, 100.0f), 10.5f, 100.0f, true, 0.6f);
+    Material triangleMaterial(vec3(70.0f, 255.0f, 70.0f), 0.01f, vec3(70.0f, 255.0f, 70.0f), 0.21f, vec3(70.0f, 255.0f, 70.0f), 5.5f, 70.0f, false);
+    Material reflectiveMaterial(vec3(70.0f, 70.0f, 70.0f), 0.01f, vec3(70.0f, 70.0f, 70.0f), 0.21f, vec3(70.0f, 70.0f, 70.0f), 5.5f, 70.0f, true, 0.6f);
     Material planeMaterial(vec3(130.0f, 130.0f, 130.0f), 0.1f, vec3(130.0f, 130.0f, 130.0f), 0.5f, vec3(130.0f, 130.0f, 130.0f), 10.5f, 100.0f, true, 0.05f);
 
     //create an object an an array of objects in the scene not using vector
     //dynamically allocate the sphere and an array to hold it
     Sphere* sphere = new Sphere(1.0, vec3(-3.0f, 0.0f, 0.0f), material);
     Sphere* sphere2 = new Sphere(1.5, vec3(3.0f, -3.0f, 0.5f), material2);
-    Sphere* sphere3 = new Sphere(5, vec3(6.0f, 6.0f, 4.0f), triangleMaterial);
+    Sphere* sphere3 = new Sphere(5, vec3(6.0f, 6.0f, 4.0f), reflectiveMaterial);
     Plane* plane = new Plane(vec3(0.0f, 0.0f, 1.0f), -1.0f, planeMaterial);
 
-    Triangle* triangle = new Triangle(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), triangleMaterial);
-    Triangle* triangle2 = new Triangle(vec3(0.0f, 0.0f, 0.0f),  vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 2.0f), triangleMaterial);
-    Triangle* triangle3 = new Triangle(vec3(0.0f, 0.0f, 0.0f),  vec3(0.0f, 10.0f, 0.0f), vec3(0.0f, 0.0f, 2.0f), triangleMaterial);
-    Triangle* triangle4 = new Triangle(vec3(0.0f, 0.0f, 0.0f),  vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), triangleMaterial);
+    //make a tetrahedron to the back right of the scene with points (-5, 5, 0), (-7, 5, 0), (-6, 7, 0), and (-6, 6, 5)
+    Triangle* triangle = new Triangle(vec3(-5.0f, 5.0f, 0.0f), vec3(-7.0f, 5.0f, 0.0f), vec3(-6.0f, 7.0f, 0.0f), triangleMaterial);
+    Triangle* triangle2 = new Triangle(vec3(-5.0f, 5.0f, 0.0f), vec3(-7.0f, 5.0f, 0.0f), vec3(-6.0f, 6.0f, 5.0f), triangleMaterial);
+    Triangle* triangle3 = new Triangle(vec3(-5.0f, 5.0f, 0.0f), vec3(-6.0f, 6.0f, 5.0f), vec3(-6.0f, 7.0f, 0.0f), triangleMaterial);
+    Triangle* triangle4 = new Triangle(vec3(-7.0f, 5.0f, 0.0f), vec3(-6.0f, 6.0f, 5.0f), vec3(-6.0f, 7.0f, 0.0f), triangleMaterial);
 
     scene.addSurface(sphere);
     scene.addSurface(sphere2);
@@ -258,26 +262,32 @@ int main()
     
     scene.addSurface(sphere3);
 
-    Light* directionalLight = new Light(vec3(255.0f, 255.0f, 255.0f), vec3(-50.0f, 50.0f,-50.0f), 0.02f);
+    Light* directionalLight = new DirectionalLight(vec3(255.0f, 255.0f, 230.0f), vec3(-50.0f, 50.0f,-50.0f), 0.02f);
     scene.addLight(directionalLight);
 
-    AmbientLight ambientLight = AmbientLight(vec3(255.0f, 255.0f, 255.0f), 0.007f);
+    Light* spotLight = new SpotLight(vec3(255.0f, 255.0f, 255.0f), vec3(0.0f, 0.0f,-1.0f), 2.2f, vec3(0.0f, 0.0f, 10.0f), 360.0f);
+    //Light* spotLight = new SpotLight(vec3(255.0f, 0.0f, 255.0f), vec3(0.0f, 0.0f,-1.0f), 2.2f, vec3(-5.0f, 0.0f, 10.0f), 0.6f);
+    //scene.addLight(spotLight);
+
+    AmbientLight ambientLight = AmbientLight(vec3(255.0f, 255.0f, 255.0f), 0.002f);
     scene.setAmbientLight(ambientLight);
 
-    for(int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            Ray ray = cam->getRay(i, j);
-            vec3 color = scene.trace(ray);
+    //render the image
+    scene.renderImage(cam);
+    unsigned char* image = scene.getImage();
+
+    // Flip the image vertically
+    stbi_flip_vertically_on_write(1);
 
 
-            int idx = (i * width + j) * 3;
-            image[idx] = (unsigned char) color[0];
-            image[idx+1] = (unsigned char) color[1];
-            image[idx+2] = (unsigned char) color[2];
-        }
-    }
+    //create an animation by changing the camera position, lookat, and up vectors and rerendering the image
+    //create a loop that changes the camera position, lookat, and up vectors and rerenders the image
+    /*for (int i = 0; i < 10; i++) {
+        orthoCam.changeView(vec3(2.0f, -10.0f, 10.0f + i), vec3(0.0f, 2.0f, -1.0f -i), vec3(0.0f, 0.0f, 1.0f- i));
+        scene.renderImage(&orthoCam);
+        image = scene.getImage();
+        stbi_write_png(("../images/output" + std::to_string(i) + ".png").c_str(), width, height, 3, image, width * 3);
+    }*/
 
     unsigned char *data = &image[0];
     if (data)

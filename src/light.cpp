@@ -12,17 +12,28 @@ vec3 Light::getDirection() {
     return direction;
 }
 
+vec3 SpotLight::getSpotLightDirection(vec3 pointPosition) {
+    return normalize(position - pointPosition);
+    
+}
+
 float SpotLight::getIntensity(vec3 pointPosition) {
-    //TODO  
-    return 0.0f;
+    vec3 lightDirection = pointPosition - position;
+    float distance = length(lightDirection);
+    lightDirection = normalize(lightDirection);
+    float angle = acos(dot(lightDirection, direction));
+    if (angle > maxAngle) {
+        return 0.0f;
+    }
+    return intensity / (distance * distance) * (1.0f - angle / maxAngle);
 }
 
 vec3 SpotLight::getPosition() {
     return position;
 }
 
-float SpotLight::getAngle() {
-    return angle;
+float SpotLight::getMaxAngle() {
+    return maxAngle;
 }
 
 vec3 AmbientLight::getColor() {
