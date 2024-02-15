@@ -15,11 +15,18 @@ Ray Camera::getRay(int i, int j){
     return rays[i][j];
 }
 
+void Camera::changeView(vec3 viewPoint, vec3 lookAt, vec3 up){
+    this->viewPoint = viewPoint;
+    this->lookAt = normalize(lookAt);
+    this->up = normalize(up);
+    generateRays();
+}
+
 void OrthographicCamera::generateRays(){
     vec3 e = viewPoint;
     vec3 w = normalize(-lookAt);
     vec3 u = normalize(cross(up, w));
-    vec3 v = cross(w, u);
+    vec3 v = normalize(cross(w, u));
     
     float aspectRatio = (float)width / (float)height;
     float halfWidth = aspectRatio * 10;
@@ -32,7 +39,7 @@ void OrthographicCamera::generateRays(){
         for(int j = 0; j < height; j++){
             float x = -halfWidth + pixelWidth * (i + 0.5);
             float y = halfHeight - pixelHeight * (j + 0.5);
-            vec3 origin = viewPoint + x * u + y * v;
+            vec3 origin = viewPoint + y * u + x * v;
             rays[i][j] = Ray(origin, -w);
         }
     }
@@ -42,7 +49,7 @@ void PerspectiveCamera::generateRays(){
     vec3 e = viewPoint;
     vec3 w = normalize(-lookAt);
     vec3 u = normalize(cross(up, w));
-    vec3 v = cross(w, u);
+    vec3 v = normalize(cross(w, u));
     
     float aspectRatio = (float)width / (float)height;
     float halfWidth = aspectRatio* 10;
@@ -56,7 +63,7 @@ void PerspectiveCamera::generateRays(){
             float x = -halfWidth + pixelWidth * (i + 0.5);
             float y = halfHeight - pixelHeight * (j + 0.5);
             vec3 origin = viewPoint;
-            vec3 direction = normalize(x * u + y * v - projectionDistance * w);
+            vec3 direction = normalize(-projectionDistance*w + y*u + x*v);
             rays[i][j] = Ray(origin, direction);
         }
     }

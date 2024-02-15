@@ -19,7 +19,13 @@ public:
     vec2 pixelToPos(int i, int j);
     Ray** getRays();
     Ray getRay(int i, int j);
-
+    void changeView(vec3 viewPoint, vec3 lookAt, vec3 up);
+    int getWidth() {
+        return width;
+    }
+    int getHeight() {
+        return height;
+    }
     vec3 getPosition() {
         return viewPoint;
     }

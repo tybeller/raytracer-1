@@ -13,11 +13,13 @@ public:
     void addSurface(Surface* surface);
     void addLight(Light* light);
     void setAmbientLight(AmbientLight ambientLight);
-
+    void renderImage(Camera* cam);
     vec3 trace(Ray ray);
+    unsigned char* getImage();
     
 protected:
     vector<Surface*> surfaces;
     vector<Light*> lights;
     AmbientLight ambientLight;
+    unsigned char* image;
 };

@@ -8,6 +8,7 @@ Scene::Scene() {
     surfaces = vector<Surface*>();
     lights = vector<Light*>();
     ambientLight = AmbientLight();
+    image = NULL;
 }
 
 Scene::~Scene() {
@@ -16,6 +17,9 @@ Scene::~Scene() {
     }
     for (int i = 0; i < lights.size(); i++) {
         delete lights[i];
+    }
+    if (image != NULL) {
+        delete[] image;
     }
 }
 
@@ -48,7 +52,7 @@ vec3 Scene::trace(Ray visionRay) {
 
         color += ambientLight.getColor() * ambientLight.getIntensity() * surfaceMaterial.getAmbient();
 
-
+        
         vec3 impactPoint = visionRay.getOrigin() + t * visionRay.getDirection();
         vec3 normal = closestSurface->getNormal(impactPoint);
         // check that the normal is in the right direction
@@ -57,9 +61,16 @@ vec3 Scene::trace(Ray visionRay) {
         }
         //add diffuse light
         for (int i = 0; i < lights.size(); i++) {
+
+            //this only accounts for directional light
             vec3 lightDirection = lights[i]->getDirection() * -1.0f;
             float lightIntensity = lights[i]->getIntensity(impactPoint);
 
+            //if light is a spotlight
+            if (dynamic_cast<SpotLight*>(lights[i]) != NULL) {
+                lightDirection = ((SpotLight*)lights[i])->getSpotLightDirection(impactPoint);
+                lightIntensity = ((SpotLight*)lights[i])->getIntensity(impactPoint);
+            }
 
             //check if the point is in the shadow
             Ray shadowRay = Ray(impactPoint + 0.001f * normal, lightDirection);
@@ -74,26 +85,28 @@ vec3 Scene::trace(Ray visionRay) {
                 }
             }
             if (!inShadow) {
+                //add diffuse light
                 float diffuse = glm::dot(normal, lightDirection);
                 if (diffuse > 0.0f) {
                     color += lightIntensity * lights[i]->getColor() * surfaceMaterial.getDiffuse() * diffuse;
                 }
-                /*//add specular light
-                vec3 reflection = glm::reflect(-lightDirection, normal);
-                float specular = glm::dot(reflection, visionRay.getDirection());
-                if (specular > 0.0f) {
-                    color += lightIntensity * lights[i]->getColor() * surfaceMaterial.getSpecular() * pow(specular, surfaceMaterial.getShininess());
-                }*/
+                //add specular light (blinn phong model)
+                vec3 viewDirection = glm::normalize(visionRay.getOrigin() - impactPoint);
+                vec3 halfVector = glm::normalize(lightDirection + viewDirection);
+                float specular = glm::pow(glm::max(0.0f, glm::dot(normal, halfVector)), surfaceMaterial.getPhongExp());
+                color += lightIntensity * lights[i]->getColor() * surfaceMaterial.getSpecular() * specular;
             }
-
-
-            
-
-    
-
         }
-
-
+        if(surfaceMaterial.isGlazed()) {
+            //recursive raytracing
+            vec3 reflectedDirection = glm::normalize(visionRay.getDirection() - 2.0f * glm::dot(visionRay.getDirection(), normal) * normal);
+            Ray reflectedRay = Ray(impactPoint + 0.001f * normal, reflectedDirection);
+            color += surfaceMaterial.getReflectivity() * trace(reflectedRay);
+        }
+    }
+    else {
+        //sky color
+        color = vec3(255.0f, 77.0f, 0.0f) + visionRay.getDirection().z * vec3(0.0f, 100.0f, 10.0f);
     }
 
     // take each component of vec3 color and clamp it to the range [0, 255]
@@ -102,4 +115,36 @@ vec3 Scene::trace(Ray visionRay) {
     color[2] = std::max(0.0f, std::min(255.0f, color[2]));
 
     return color;
+}
+
+void Scene::renderImage(Camera* cam)
+{
+    int width = cam->getWidth();
+    int height = cam->getHeight();
+    if (image != NULL)
+    {
+        delete[] image;
+    }
+    image = new unsigned char[width * height * 3];
+
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            Ray ray = cam->getRay(i, j);
+            vec3 color = trace(ray);
+
+            int idx = (i * width + j) * 3;
+            image[idx] = (unsigned char)color[0];
+            image[idx + 1] = (unsigned char)color[1];
+            image[idx + 2] = (unsigned char)color[2];
+        }
+    }
+
+    return;
+}
+
+unsigned char* Scene::getImage()
+{
+    return image;
 }

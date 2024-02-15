@@ -2,10 +2,13 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #define GLFW_INCLUDE_NONE
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 #include <vector>
+#include <stb_image/stb_image_write.h>
 
 #include "surface.h"
 #include "camera.h"
@@ -18,7 +21,7 @@ using glm::vec3;
 using std::vector;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, Scene& scene, Camera& cam1, Camera& cam2, bool& currCam);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -217,13 +220,12 @@ int main()
     const int width  = 800; // keep it in powers of 2!
     const int height = 800; // keep it in powers of 2!
 
-    std::cout << "Creating image of size " << width << "x" << height << std::endl;
-    unsigned char image[width*height*3];
+    //unsigned char image[width*height*3];
 
 
     //create cameras
-    //OrthographicCamera orthoCam(width, height, vec3(0.0f, -100.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f));
-    PerspectiveCamera perspCam(width, height, vec3(0.0f, -10.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), 10.0f);
+    OrthographicCamera orthoCam(width, height, vec3(2.0f, -10.0f, 10.0f), vec3(0.0f, 2.0f, -1.0f), vec3(0.0f, 0.0f, 1.0f));
+    PerspectiveCamera perspCam(width, height, vec3(2.0f, -10.0f, 10.0f), vec3(0.0f, 2.0f, -1.0f), vec3(0.0f, 0.0f, 1.0f), 10.0f);
 
     Camera *cam = &perspCam;
 
@@ -232,41 +234,79 @@ int main()
     Scene scene = Scene();
 
     //create a material
-    Material material(vec3(255.0f, 0.0f, 0.0f), 0.1f, vec3(255.0f, 0.0f, 0.0f), 0.5f, vec3(255.0f, 0.0f, 0.0f), 0.5f, 1.0f, false);
-    Material planeMaterial(vec3(130.0f, 130.0f, 130.0f), 0.1f, vec3(130.0f, 130.0f, 130.0f), 0.5f, vec3(130.0f, 130.0f, 130.0f), 0.5f, 1.0f, false);
+    Material material(vec3(255.0f, 19.0f, 1.0f), 0.1f, vec3(255.0f, 10.0f, 1.0f), 0.5f, vec3(255.0f, 10.0f, 1.0f), 1.5f, 10.0f, false);
+    Material material2(vec3(20.0f, 255.0f, 255.0f), 0.1f, vec3(20.0f, 255.0f, 255.0f), 0.3f, vec3(20.0f, 255.0f, 255.0f), 10.0f, 100.0f, true, 0.3f);
+    Material triangleMaterial(vec3(70.0f, 255.0f, 70.0f), 0.01f, vec3(70.0f, 255.0f, 70.0f), 0.21f, vec3(70.0f, 255.0f, 70.0f), 5.5f, 70.0f, false);
+    Material reflectiveMaterial(vec3(70.0f, 70.0f, 70.0f), 0.01f, vec3(70.0f, 70.0f, 70.0f), 0.21f, vec3(70.0f, 70.0f, 70.0f), 5.5f, 70.0f, true, 0.6f);
+    Material planeMaterial(vec3(130.0f, 130.0f, 130.0f), 0.1f, vec3(130.0f, 130.0f, 130.0f), 0.5f, vec3(130.0f, 130.0f, 130.0f), 10.5f, 100.0f, true, 0.05f);
 
     //create an object an an array of objects in the scene not using vector
     //dynamically allocate the sphere and an array to hold it
-    Sphere* sphere = new Sphere(1.0, vec3(0.0f, 0.0f, 0.0f), material);
+    Sphere* sphere = new Sphere(1.0, vec3(-3.0f, 0.0f, 0.0f), material);
+    Sphere* sphere2 = new Sphere(1.5, vec3(3.0f, -3.0f, 0.5f), material2);
+    Sphere* sphere3 = new Sphere(5, vec3(6.0f, 6.0f, 4.0f), reflectiveMaterial);
     Plane* plane = new Plane(vec3(0.0f, 0.0f, 1.0f), -1.0f, planeMaterial);
 
-    Triangle* triangle = new Triangle(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), material);
+    //make a tetrahedron to the back right of the scene with points (-5, 5, 0), (-7, 5, 0), (-6, 7, 0), and (-6, 6, 5)
+    Triangle* triangle = new Triangle(vec3(-5.0f, 5.0f, 0.0f), vec3(-7.0f, 5.0f, 0.0f), vec3(-6.0f, 7.0f, 0.0f), triangleMaterial);
+    Triangle* triangle2 = new Triangle(vec3(-5.0f, 5.0f, 0.0f), vec3(-7.0f, 5.0f, 0.0f), vec3(-6.0f, 6.0f, 5.0f), triangleMaterial);
+    Triangle* triangle3 = new Triangle(vec3(-5.0f, 5.0f, 0.0f), vec3(-6.0f, 6.0f, 5.0f), vec3(-6.0f, 7.0f, 0.0f), triangleMaterial);
+    Triangle* triangle4 = new Triangle(vec3(-7.0f, 5.0f, 0.0f), vec3(-6.0f, 6.0f, 5.0f), vec3(-6.0f, 7.0f, 0.0f), triangleMaterial);
 
     scene.addSurface(sphere);
+    scene.addSurface(sphere2);
     scene.addSurface(plane);
     scene.addSurface(triangle);
-
+    scene.addSurface(triangle2);
+    scene.addSurface(triangle3);
+    scene.addSurface(triangle4);
     
-    Light* directionalLight = new Light(vec3(255.0f, 255.0f, 255.0f), vec3(-50.0f, 50.0f,-50.0f), 0.02f);
-    scene.addLight(directionalLight);
+    scene.addSurface(sphere3);
 
-    AmbientLight ambientLight = AmbientLight(vec3(255.0f, 255.0f, 255.0f), 0.007f);
+    Light* directionalLight = new DirectionalLight(vec3(255.0f, 255.0f, 230.0f), vec3(-50.0f, 50.0f,-50.0f), 0.02f);
+    //scene.addLight(directionalLight);
+
+    Light* spotLight = new SpotLight(vec3(255.0f, 240.0f, 200.0f), vec3(0.0f, 0.0f,-1.0f), 2.2f, vec3(0.0f, 0.0f, 10.0f), glm::pi<float>()*2.0f);
+    //Light* spotLight = new SpotLight(vec3(255.0f, 0.0f, 255.0f), vec3(0.0f, 0.0f,-1.0f), 2.2f, vec3(-5.0f, 0.0f, 10.0f), 0.6f);
+    scene.addLight(spotLight);
+
+    AmbientLight ambientLight = AmbientLight(vec3(255.0f, 255.0f, 255.0f), 0.002f);
     scene.setAmbientLight(ambientLight);
 
-    for(int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            Ray ray = cam->getRay(i, j);
-            vec3 color = scene.trace(ray);
+    //render the image
+    scene.renderImage(&orthoCam);
+    unsigned char* image = scene.getImage();
+    //scene.renderImage(&orthoCam);
+    //unsigned char* image1 = scene.getImage();
+
+    // Flip the image vertically
+    stbi_flip_vertically_on_write(1);
 
 
-            int idx = (i * width + j) * 3;
-            image[idx] = (unsigned char) color[0];
-            image[idx+1] = (unsigned char) color[1];
-            image[idx+2] = (unsigned char) color[2];
-        }
+    //create an animation by changing the camera position, lookat, and up vectors and rerendering the image
+    //create a loop that changes the camera position, lookat, and up vectors and rerenders the image
+    /*
+    for (int i = 0; i < 288; i++) {
+        //movie 1 viewpoint
+        //vec3 viewPoint = vec3(-10 + 20 * glm::sin((2* glm::pi<float>() *i )/(12*24)), -10, 16 + 15 * glm::cos((2* glm::pi<float>() *i )/(12*24)));
+        //movie 2 viewpoint
+        vec3 viewPoint = vec3(-10 + 20 * glm::sin((2* glm::pi<float>() *i )/(12*24)), -40, 26 + 15 * glm::cos((2* glm::pi<float>() *i )/(12*24)));
+
+        vec3 lookAt = glm::normalize(-viewPoint);
+
+        //movie 1 change view
+        //perspCam.changeView(viewPoint, lookAt, vec3(0.0f, 0.0f, 1.0f));
+        //movie 2 change view
+        orthoCam.changeView(viewPoint, lookAt, vec3(0.0f, 0.0f, 1.0f));
+        scene.renderImage(&perspCam);
+        image = scene.getImage();
+        std::cout << "Rendering image " << i << std::endl;
+        //stbi_write_png(("../images/movie1/output" + std::to_string(i) + ".png").c_str(), width, height, 3, image, width * 3);
+        stbi_write_png(("../images/movie2/output" + std::to_string(i) + ".png").c_str(), width, height, 3, image, width * 3);
     }
+    */
+
+    
 
     unsigned char *data = &image[0];
     if (data)
@@ -278,8 +318,10 @@ int main()
     {
         std::cout << "Failed to load texture" << std::endl;
     }
-   
 
+    stbi_write_png("../images/screenshots/cover.png", width, height, 3, image, width * 3);
+   
+    bool currCam = 0;
 
     // render loop
     // -----------
@@ -287,7 +329,7 @@ int main()
     {
         // input
         // -----
-        processInput(window);
+        processInput(window, scene, orthoCam, perspCam, currCam);
 
         // render
         // ------
@@ -322,10 +364,36 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, Scene& scene, Camera& cam0, Camera& cam1, bool& currCam)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+    {
+        std::cout << "loading new camera" << std::endl;
+        if (currCam)
+        {
+            scene.renderImage(&cam0);
+        }
+        else
+        {
+            scene.renderImage(&cam1);
+        }
+        currCam = !currCam;
+        unsigned char* image = scene.getImage();
+        if (image)
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+            glGenerateMipmap(GL_TEXTURE_2D);
+            std::cout << "loaded new camera" << std::endl;
+        }
+        else
+        {
+            std::cout << "Failed to load texture" << std::endl;
+        }
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
