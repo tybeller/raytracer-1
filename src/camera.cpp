@@ -26,7 +26,7 @@ void OrthographicCamera::generateRays(){
     vec3 e = viewPoint;
     vec3 w = normalize(-lookAt);
     vec3 u = normalize(cross(up, w));
-    vec3 v = cross(w, u);
+    vec3 v = normalize(cross(w, u));
     
     float aspectRatio = (float)width / (float)height;
     float halfWidth = aspectRatio * 10;
@@ -49,7 +49,7 @@ void PerspectiveCamera::generateRays(){
     vec3 e = viewPoint;
     vec3 w = normalize(-lookAt);
     vec3 u = normalize(cross(up, w));
-    vec3 v = cross(w, u);
+    vec3 v = normalize(cross(w, u));
     
     float aspectRatio = (float)width / (float)height;
     float halfWidth = aspectRatio* 10;
