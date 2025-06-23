@@ -1,3 +1,5 @@
+Simple C++ CPU Raytracer
+
 ![[http://url/to/img.png](https://github.com/tybeller/raytracer-1/blob/main/images/screenshots/cover.png)](https://github.com/tybeller/raytracer-1/blob/main/images/screenshots/cover.png)
 
 Building:
